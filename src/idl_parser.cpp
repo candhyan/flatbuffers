@@ -1777,7 +1777,24 @@ CheckedError Parser::ParseNestedFlatbuffer(Value &val, FieldDef *field,
     // Create and initialize new parser
     Parser nested_parser;
     FLATBUFFERS_ASSERT(field->nested_flatbuffer);
-    nested_parser.root_struct_def_ = field->nested_flatbuffer;
+
+#if 1
+    auto attr = field->attributes.Lookup("lookup");
+    if (attr) 
+    {
+      std::string type_name = attr->constant;
+      auto fieldDef = parent_struct_def->fields.Lookup(type_name);
+      type_name = (char *)builder_.GetCurrentBufferPointer() + fieldDef->value.offset;
+      nested_parser.root_struct_def_ = LookupCreateStruct(type_name);
+    }
+    else
+    {
+#else
+    {
+      nested_parser.root_struct_def_ = field->nested_flatbuffer;
+#endif
+    }
+
     nested_parser.enums_ = enums_;
     nested_parser.opts = opts;
     nested_parser.uses_flexbuffers_ = uses_flexbuffers_;
